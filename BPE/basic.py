@@ -44,6 +44,51 @@ class BasicTokenizer(Tokenizer):
         return token
 
 
+    def encode(self, text):
+        """
+        Encodes a string into a list of integers (tokens) using the vocabulary.
+        """
+        tokens = self.getToken(text)
+        
+        while len(tokens) >= 2:
+            stats = self.get_stats(tokens)
+            # extract the minimum extracted pair
+            pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
+            if pair not in self.merges:
+                break  # Stop if there are no more pairs to merge
+            idx = self.merges[pair]
+            tokens = self.merge(tokens, pair, idx)
+        return tokens
+    
+    def decode(self, ids):
+        """
+        Decodes a list of integers (token ids) back into a string.
+        """
+        i = 0
+        length = len(ids)
+        
+        # List out keys and values separately from the merges dictionary
+        key_list = list(self.merges.keys())
+        val_list = list(self.merges.values())
+        
+        while i < length:
+            if ids[i] in val_list:
+                position = val_list.index(ids[i])
+                ids[i] = key_list[position][0]
+                
+                if i < len(ids) - 1:
+                    ids.insert(i+1, key_list[position][1])
+                else:
+                    ids.append(key_list[position][1])
+                
+                i -= 1  # Move back to reprocess the new pair
+                length = len(ids)  # Update the length after inserting
+            i += 1
+        
+        # Decode the list of ids back into a UTF-8 string, replacing errors with '�'
+        txt = bytes(ids).decode("utf-8", errors="replace")
+        return txt
+
 
 if __name__ == "__main__":
     print("hello")
