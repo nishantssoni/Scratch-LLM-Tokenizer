@@ -12,16 +12,12 @@ class BasicTokenizer(Tokenizer):
         # Store the raw text
         self.raw_text = text
         
-        # Tokenize the text and calculate statistics for token pairs
-        # self.tokens = self.getToken(self.raw_text)
-        # self.stats = self.get_stats(self.tokens)
-        
         # Set the desired final vocabulary size
         self.vocab_size = vocab_size
         
         # Calculate the number of merges to perform
         no_of_merges = vocab_size - 256  # Initially, we have 0...255 (256 vocabs)
-        ids = self.getToken(text)  # Copy tokens to ids so we don't modify the original list
+        ids = self.getToken(text)  
         
         # Perform merges to create new tokens from top pairs
         for i in tqdm(range(no_of_merges)):
@@ -32,6 +28,20 @@ class BasicTokenizer(Tokenizer):
             # Merge the top pair into a new token
             ids = self.merge(ids, top_pair, idx)
             self.merges[top_pair] = idx
+            self.vocab[idx] = self.vocab[top_pair[0]] + self.vocab[top_pair[1]]
+            
+            # a discription of merges while traning
+            if verbose:
+                print(f"merge {i+1}/{no_of_merges}: {top_pair} -> {idx} ({self.vocab[idx]}) had {stats[top_pair]} occurrences")
+
+    
+    def getToken(self, text):
+        """
+        Converts a string to a list of integers (tokens) by encoding it as UTF-8.
+        """
+        token = text.encode("utf-8")
+        token = list(map(int, token))
+        return token
 
 
 
