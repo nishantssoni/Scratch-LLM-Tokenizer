@@ -7,6 +7,7 @@ class Tokenizer:
         self.secial_tokens = {}
         self.vocab_size = 0
         self.vocab = self.get_vocab()
+        self.raw_text = ''
 
     
     def train(self, text, vocab_size, verbose=False):
@@ -16,6 +17,9 @@ class Tokenizer:
         raise NotImplementedError
     
     def decode(self, ids):
+        raise NotImplementedError
+    
+    def get_token(self, text):
         raise NotImplementedError
     
     def get_vocab(self):
