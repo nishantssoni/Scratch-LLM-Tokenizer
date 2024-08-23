@@ -100,7 +100,7 @@ class RgxTokenizer(Tokenizer):
         for i in text_chunk:
             temp_ids = self.encode_in_chunk(i)
             ids.extend(temp_ids)
-            print("i am encode ids :: ", ids)
+        print("i am encode ids :: ", ids)
         return ids
 
 
@@ -130,7 +130,7 @@ class RgxTokenizer(Tokenizer):
                 length = len(ids)  # Update the length after inserting
             i += 1
         
-        print("the ids are :: ",ids)
+        # print("the ids are :: ",ids)
         # Decode the list of ids back into a UTF-8 string, replacing errors with '�'
         txt = bytes(ids).decode("utf-8", errors="replace")
         return txt
