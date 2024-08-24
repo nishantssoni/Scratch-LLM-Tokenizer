@@ -49,6 +49,7 @@ class BasicTokenizer(Tokenizer):
         Encodes a string into a list of integers (tokens) using the vocabulary.
         """
         tokens = self.getToken(text)
+        before_length = len(tokens)
         
         while len(tokens) >= 2:
             stats = self.get_stats(tokens)
@@ -58,6 +59,12 @@ class BasicTokenizer(Tokenizer):
                 break  # Stop if there are no more pairs to merge
             idx = self.merges[pair]
             tokens = self.merge(tokens, pair, idx)
+
+        # Print the token length before and after merging, and the compression ratio
+        print("\nBefore merge token length:", before_length)
+        print("After merge token length:", len(tokens))
+        print(f"Compression ratio: {before_length / len(tokens):.3f}X")
+
         return tokens
     
     def decode(self, ids):

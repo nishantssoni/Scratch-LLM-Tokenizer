@@ -7,7 +7,7 @@ class RgxTokenizer(Tokenizer):
         super().__init__()
         self.GPT2_SPLIT_PATTERN = r"""'(?:[sdmt]|ll|ve|re)| ?\p{L}+| ?\p{N}+| ?[^\s\p{L}\p{N}]+|\s+(?!\S)|\s+"""
         self.GPT4_SPLIT_PATTERN = r"""'(?i:[sdmt]|ll|ve|re)|[^\r\n\p{L}\p{N}]?+\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]++[\r\n]*|\s*[\r\n]|\s+(?!\S)|\s+"""
-        
+        self.pre_encode_size = 0
 
     def train(self, text, v_size, verbose=False):
         """
@@ -81,8 +81,8 @@ class RgxTokenizer(Tokenizer):
         """
         Encodes a string into a list of integers (tokens) using the vocabulary.
         """
-        # tokens = list(text.encode("utf-8"))
-        tokens = self.getToken(text)
+        tokens = list(text.encode("utf-8"))
+        self.pre_encode_size += len(tokens) #to track the old token size
         while len(tokens) >= 2:
             stats = self.get_stats(tokens)
             pair = min(stats, key=lambda p: self.merges.get(p, float("inf")))
@@ -97,10 +97,17 @@ class RgxTokenizer(Tokenizer):
         text_chunk = re.findall(pttrn, text)
 
         ids = []
+        self.pre_encode_size = 0
         for i in text_chunk:
             temp_ids = self.encode_in_chunk(i)
             ids.extend(temp_ids)
-        print("i am encode ids :: ", ids)
+
+        # Print the token length before and after merging, and the compression ratio
+        print("\nBefore merge token length:", self.pre_encode_size)
+        print("After merge token length:", len(ids))
+        print(f"Compression ratio: {self.pre_encode_size / len(ids):.3f}X")
+        # print("i am encode ids :: ", ids)
+        # print(f"compression ratio : {self.pre_encode_size}")
         return ids
 
 
@@ -109,7 +116,7 @@ class RgxTokenizer(Tokenizer):
         Decodes a list of integers (token ids) back into a string.
         """
         i = 0
-        ids = [item for sublist in ids for item in sublist]
+        # ids = [item for sublist in ids for item in sublist]
         length = len(ids)
         
         # List out keys and values separately from the merges dictionary
